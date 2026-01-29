@@ -14,7 +14,7 @@ LOG_FILE="app.log"
 
 function do_stop() {
     printf "${YELLOW}正在停止 STARK Todo List...${NC}\n"
-    
+
     # 1. 首先尝试通过 PID 文件停止
     if [ -f "$PID_FILE" ]; then
         PID=$(cat "$PID_FILE")
@@ -23,8 +23,8 @@ function do_stop() {
         rm "$PID_FILE"
     fi
 
-    # 2. 强力兜底：查找并杀死占用 3000 端口的所有 Node 进程
-    PORT_PIDS=$(lsof -t -i:3000)
+    # 2. 强力兜底：查找并杀死占用 3001 端口的所有 Node 进程
+    PORT_PIDS=$(lsof -t -i:3001)
     if [ -n "$PORT_PIDS" ]; then
         for P in $PORT_PIDS; do
             kill -9 $P >/dev/null 2>&1
@@ -39,22 +39,22 @@ function do_start() {
         return 0
     fi
 
-    PORT_PID=$(lsof -t -i:3000)
+    PORT_PID=$(lsof -t -i:3001)
     if [ -n "$PORT_PID" ]; then
-        printf "${RED}错误: 端口 3000 已被占用，尝试执行 stop 后再启动${NC}\n"
+        printf "${RED}错误: 端口 3001 已被占用，尝试执行 stop 后再启动${NC}\n"
         return 1
     fi
 
     printf "${GREEN}使用 $PM 启动 STARK Todo List...${NC}\n"
     # 抑制安装输出，保持界面整洁
     $PM install > /dev/null 2>&1
-    
+
     nohup $PM run dev > "$LOG_FILE" 2>&1 &
     echo $! > "$PID_FILE"
-    
+
     sleep 2
     if kill -0 $(cat "$PID_FILE") 2>/dev/null; then
-        printf "${GREEN}启动成功！访问: http://localhost:3000${NC}\n"
+        printf "${GREEN}启动成功！访问: http://localhost:3001${NC}\n"
     else
         printf "${RED}启动失败，请查看 $LOG_FILE${NC}\n"
         rm -f "$PID_FILE"
@@ -92,9 +92,9 @@ case "$1" in
         [ -f "$LOG_FILE" ] && tail -f "$LOG_FILE" || printf "${RED}日志文件不存在${NC}\n"
         ;;
     status)
-        if lsof -i:3000 >/dev/null 2>&1; then
+        if lsof -i:3001 >/dev/null 2>&1; then
             printf "${GREEN}应用正在运行${NC}\n"
-            lsof -i:3000
+            lsof -i:3001
         else
             printf "${RED}应用未运行${NC}\n"
         fi
