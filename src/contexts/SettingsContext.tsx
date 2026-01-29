@@ -16,7 +16,7 @@ interface SettingsContextType {
 
 const defaultSettings: Settings = {
   language: 'zh',
-  logoText: 'DigVPS',
+  logoText: 'DIGVPS',
   timezone: 'Asia/Shanghai',
   theme: 'system',
 };
