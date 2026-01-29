@@ -6,7 +6,7 @@ import StatsTracker from "@/components/StatsTracker";
 import AuthModal from "@/components/AuthModal";
 
 export const metadata: Metadata = {
-  title: "STARK Todo - 极简任务管理",
+  title: "DigVPS 待办任务",
   description: "现代化、高效的待办事项管理工具",
   icons: {
     icon: [
@@ -43,9 +43,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#3b82f6" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link 
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" 
-          rel="stylesheet" 
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet"
         />
       </head>
       <body className="antialiased" suppressHydrationWarning>
