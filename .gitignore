@@ -35,3 +35,4 @@ todos.json
 app.log
 app.pid
 stats.json
+.idea
