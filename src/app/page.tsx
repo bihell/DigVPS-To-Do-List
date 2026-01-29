@@ -40,18 +40,18 @@ export default function Home() {
   useEffect(() => {
     fetchTodos();
     fetchGroups();
-    
+
     // Record PV/UV
     fetch('/api/stats', { method: 'POST' }).catch(err => console.error('Failed to record stats:', err));
-    
+
     // Detect mobile device
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768); // md breakpoint
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -85,7 +85,7 @@ export default function Home() {
     try {
       const response = await fetch('/api/groups', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders()
         },
@@ -104,7 +104,7 @@ export default function Home() {
     if (id === DEFAULT_GROUP_ID || !isAuthenticated) return;
 
     try {
-      await fetch(`/api/groups?id=${id}`, { 
+      await fetch(`/api/groups?id=${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
       });
@@ -130,11 +130,11 @@ export default function Home() {
     try {
       const response = await fetch('/api/todos', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders()
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           text: inputValue,
           groupId: selectedGroupId,
           priority: selectedPriority
@@ -158,7 +158,7 @@ export default function Home() {
     try {
       const response = await fetch('/api/todos', {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders()
         },
@@ -179,7 +179,7 @@ export default function Home() {
     }
 
     try {
-      await fetch(`/api/todos?id=${id}`, { 
+      await fetch(`/api/todos?id=${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
       });
@@ -213,7 +213,7 @@ export default function Home() {
       requestAuth();
       return;
     }
-    
+
     const todo = todos.find(t => t.id === id);
     if (!todo) return;
 
@@ -231,7 +231,7 @@ export default function Home() {
     try {
       const response = await fetch('/api/todos', {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders()
         },
@@ -277,11 +277,11 @@ export default function Home() {
   const filteredTodos = useMemo(() => {
     return todos
       .filter((todo) => {
-        const matchesFilter = 
+        const matchesFilter =
           filter === 'active' ? !todo.completed :
           filter === 'completed' ? todo.completed : true;
-        
-        const matchesGroup = 
+
+        const matchesGroup =
           activeGroupId === 'all' ? true : todo.groupId === activeGroupId;
 
         return matchesFilter && matchesGroup;
@@ -291,16 +291,16 @@ export default function Home() {
         if (a.completed !== b.completed) {
           return a.completed ? 1 : -1;
         }
-        
+
         // 2. 按优先级排序 (P0 > P1 > P2)
         const priorityOrder = { 'P0': 0, 'P1': 1, 'P2': 2 };
         const aPrio = a.priority || 'P2';
         const bPrio = b.priority || 'P2';
-        
+
         if (priorityOrder[aPrio] !== priorityOrder[bPrio]) {
           return priorityOrder[aPrio] - priorityOrder[bPrio];
         }
-        
+
         // 3. 按创建时间降序排序
         return b.createdAt - a.createdAt;
       });
@@ -431,7 +431,7 @@ export default function Home() {
                 <span className="hidden sm:inline text-sm uppercase tracking-wider">{t.addTask}</span>
               </button>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-3 px-4 pb-3">
               {/* Group Selector */}
               <div className="relative group/select">
@@ -510,7 +510,7 @@ export default function Home() {
 
         {/* Desktop Tabs Pro Max */}
         {!isMobile && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="flex gap-2 mb-8 bg-slate-100/50 dark:bg-slate-900/50 p-1.5 rounded-2xl w-fit mx-auto backdrop-blur-sm border border-slate-200/50 dark:border-slate-800/50 shadow-inner"
@@ -555,10 +555,10 @@ export default function Home() {
                   className="glass-card py-20 rounded-[2.5rem] text-center border-dashed border-2 opacity-60"
                 >
                   <div className="text-slate-400 dark:text-slate-500 text-sm font-bold uppercase tracking-widest px-4">
-                    {filter === 'all' 
-                      ? t.noTasks 
-                      : filter === 'active' 
-                        ? t.noActiveTasks 
+                    {filter === 'all'
+                      ? t.noTasks
+                      : filter === 'active'
+                        ? t.noActiveTasks
                         : t.noCompletedTasks}
                   </div>
                 </motion.div>
@@ -679,7 +679,7 @@ export default function Home() {
                             >
                               <Pencil size={18} strokeWidth={2.5} />
                             </motion.button>
-                            
+
                             {/* Quick Priority/Group Select for existing items */}
                             <div className="relative">
                               <motion.button
@@ -727,28 +727,6 @@ export default function Home() {
           </div>
         )}
       </div>
-
-      {/* GitHub Footer */}
-      <motion.footer
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className={`text-center ${isMobile ? 'pb-28' : 'pb-8'} pt-12`}
-      >
-        <a
-          href="https://github.com/uniStark/To-Do-List"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-100/50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 backdrop-blur-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 cursor-pointer group"
-        >
-          <Github size={18} strokeWidth={2} className="group-hover:scale-110 transition-transform" />
-          <span className="text-xs font-bold uppercase tracking-widest">Open Source on GitHub</span>
-          <Heart size={14} strokeWidth={2.5} className="text-red-400 group-hover:text-red-500 group-hover:scale-125 transition-all" />
-        </a>
-        <p className="mt-4 text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-          Made with <span className="text-red-400">♥</span> by STARK
-        </p>
-      </motion.footer>
 
       {/* Fixed Bottom Nav Pro Max (Mobile Only) */}
       {isMobile && (
@@ -809,7 +787,7 @@ export default function Home() {
                   </h3>
                   <div className="h-1 w-8 bg-blue-500 rounded-full mt-1" />
                 </div>
-                <button 
+                <button
                   onClick={() => setIsGroupModalOpen(false)}
                   className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-colors"
                 >
@@ -838,8 +816,8 @@ export default function Home() {
               {/* Groups List */}
               <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                 {groups.map((g, idx) => (
-                  <div 
-                    key={`${g.id}-${idx}`} 
+                  <div
+                    key={`${g.id}-${idx}`}
                     className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-[1.5rem] border border-slate-100 dark:border-slate-700/50"
                   >
                     <div className="flex items-center gap-3">
@@ -867,11 +845,11 @@ export default function Home() {
         {openMenuId && menuPosition && (
           <>
             {/* 点击外部关闭菜单的遮罩层 */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100]" 
+              className="fixed inset-0 z-[100]"
               onClick={() => {
                 setOpenMenuId(null);
                 setMenuPosition(null);
