@@ -15,10 +15,10 @@ interface SettingsContextType {
 }
 
 const defaultSettings: Settings = {
-  language: 'en',
-  logoText: 'STARK',
+  language: 'zh',
+  logoText: 'DigVPS',
   timezone: 'Asia/Shanghai',
-  theme: 'dark',
+  theme: 'system',
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -29,7 +29,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setIsClient(true);
-    
+
     // Load settings from localStorage
     const savedSettings = localStorage.getItem('stark-settings');
     if (savedSettings) {
@@ -59,7 +59,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isClient) return;
-    
+
     // Save settings to localStorage whenever they change
     try {
       localStorage.setItem('stark-settings', JSON.stringify(settings));
@@ -67,36 +67,36 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('[Settings] Failed to save settings:', error);
     }
-    
+
     // Apply theme
     applyTheme(settings.theme);
   }, [settings, isClient]);
 
   useEffect(() => {
     if (!isClient) return;
-    
+
     // Listen to system theme changes
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+
     const handleChange = () => {
       if (settings.theme === 'system') {
         applyTheme('system');
       }
     };
-    
+
     mediaQuery.addEventListener('change', handleChange);
-    
+
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [settings.theme, isClient]);
 
   const applyTheme = (theme: 'light' | 'dark' | 'system') => {
     if (typeof window === 'undefined') return;
-    
+
     const root = document.documentElement;
-    
+
     // 强制移除过渡效果，确保立即切换
     root.style.setProperty('transition', 'none');
-    
+
     if (theme === 'system') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (prefersDark) {
@@ -109,31 +109,31 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     } else {
       root.classList.remove('dark');
     }
-    
+
     // 强制重绘，确保立即生效
     void root.offsetHeight;
-    
+
     // 恢复过渡效果
     requestAnimationFrame(() => {
       root.style.removeProperty('transition');
     });
-    
+
     console.log(`[Theme] Applied theme: ${theme}, dark class: ${root.classList.contains('dark')}`);
   };
 
   const updateSettings = (newSettings: Partial<Settings>) => {
     setSettings(prev => {
       const updated = { ...prev, ...newSettings };
-      
+
       console.log('[Settings] Updating settings:', { old: prev, new: newSettings, updated });
-      
+
       // 如果更新了主题，立即应用
       if (newSettings.theme !== undefined) {
         requestAnimationFrame(() => {
           applyTheme(newSettings.theme!);
         });
       }
-      
+
       return updated;
     });
   };
