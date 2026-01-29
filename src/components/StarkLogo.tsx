@@ -106,14 +106,19 @@ const StarkLogo: React.FC<StarkLogoProps> = ({ logoText: customLogoText }) => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1, duration: 0.8 }}
-        className="flex items-center gap-3 px-6 py-2 rounded-full bg-slate-100/50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 backdrop-blur-md"
+        className="px-6 py-2 rounded-full bg-slate-100/50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 backdrop-blur-md"
       >
-        <span className="text-xs sm:text-sm font-semibold tracking-wider uppercase text-slate-500 dark:text-slate-400">
-          {t.subtitle1}
-        </span>
-        <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-        <span className="text-xs sm:text-sm font-semibold tracking-wider uppercase text-blue-600 dark:text-blue-400">
-          {t.subtitle2}
+        <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+          本站待办任务清单，如有任何需求建议欢迎
+          <a
+            href="https://digvps.com/getting-started/wechat"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            联系
+          </a>
+          我们。
         </span>
       </motion.div>
     </div>
