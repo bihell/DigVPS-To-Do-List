@@ -66,11 +66,11 @@ const StarkLogo: React.FC<StarkLogoProps> = ({ logoText: customLogoText }) => {
             }}
             className="absolute -inset-4 bg-blue-500/20 dark:bg-blue-400/10 rounded-full blur-2xl"
           />
-          
+
           {/* Icon Pro Max */}
           <div className="relative bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 dark:from-blue-500 dark:to-blue-600 p-3 sm:p-4 rounded-2xl shadow-2xl shadow-blue-500/20 ring-1 ring-white/20">
             <CheckSquare className="text-white" size={28} strokeWidth={2.5} />
-            <motion.div 
+            <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
               className="absolute -top-1 -right-1"
@@ -109,7 +109,7 @@ const StarkLogo: React.FC<StarkLogoProps> = ({ logoText: customLogoText }) => {
         className="px-6 py-2 rounded-full bg-slate-100/50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 backdrop-blur-md"
       >
         <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
-          本站待办任务清单，如有任何需求建议欢迎
+          本站待办任务清单，如有任何需求和建议，欢迎
           <a
             href="https://digvps.com/getting-started/wechat"
             target="_blank"
