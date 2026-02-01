@@ -31,8 +31,6 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
-  const [editGroupId, setEditGroupId] = useState<string>(DEFAULT_GROUP_ID);
-  const [editPriority, setEditPriority] = useState<Priority>('P2');
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [activeGroupId, setActiveGroupId] = useState<string | 'all'>('all');
@@ -192,24 +190,20 @@ export default function Home() {
   }, [todos, isAuthenticated, requestAuth, getAuthHeaders]);
 
   // 开始编辑
-  const startEdit = useCallback((todo: Todo) => {
+  const startEdit = useCallback((id: string, text: string) => {
     // 检查权限
     if (!isAuthenticated) {
       requestAuth();
       return;
     }
-    setEditingId(todo.id);
-    setEditText(todo.text);
-    setEditGroupId(todo.groupId || DEFAULT_GROUP_ID);
-    setEditPriority(todo.priority || 'P2');
+    setEditingId(id);
+    setEditText(text);
   }, [isAuthenticated, requestAuth]);
 
   // 取消编辑
   const cancelEdit = useCallback(() => {
     setEditingId(null);
     setEditText('');
-    setEditGroupId(DEFAULT_GROUP_ID);
-    setEditPriority('P2');
   }, []);
 
   // 保存编辑
@@ -223,16 +217,13 @@ export default function Home() {
     const todo = todos.find(t => t.id === id);
     if (!todo) return;
 
-    // 如果是编辑模式，包含分组和优先级
-    const isEditing = id === editingId;
     const finalUpdates = {
       id,
-      text: updates.text || (isEditing ? editText.trim() : todo.text),
-      ...(isEditing ? { groupId: editGroupId, priority: editPriority } : {}),
+      text: updates.text || (id === editingId ? editText.trim() : todo.text),
       ...updates
     };
 
-    if (isEditing && !editText.trim() && !updates.text) {
+    if (id === editingId && !editText.trim() && !updates.text) {
       cancelEdit();
       return;
     }
@@ -248,11 +239,11 @@ export default function Home() {
       });
       const updatedTodo = await response.json();
       setTodos(todos.map((t) => (t.id === id ? updatedTodo : t)));
-      if (isEditing) cancelEdit();
+      if (id === editingId) cancelEdit();
     } catch (error) {
       console.error('Failed to update todo:', error);
     }
-  }, [editText, editGroupId, editPriority, todos, cancelEdit, editingId, getAuthHeaders, isAuthenticated, requestAuth]);
+  }, [editText, todos, cancelEdit, editingId, getAuthHeaders, isAuthenticated, requestAuth]);
 
   const updateTodoPriority = useCallback((id: string, priority: Priority) => {
     saveEdit(id, { priority });
@@ -596,71 +587,32 @@ export default function Home() {
 
                           {editingId === todo.id ? (
                             // 编辑模式
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="text"
-                                  value={editText}
-                                  onChange={(e) => setEditText(e.target.value)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') saveEdit(todo.id);
-                                    if (e.key === 'Escape') cancelEdit();
-                                  }}
-                                  autoFocus
-                                  className="flex-1 bg-slate-100 dark:bg-slate-800 border-none rounded-xl px-4 py-2 text-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                />
-                                <motion.button
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={() => saveEdit(todo.id)}
-                                  className="p-2 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition-colors cursor-pointer"
-                                >
-                                  <Check size={18} strokeWidth={3} />
-                                </motion.button>
-                                <motion.button
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={cancelEdit}
-                                  className="p-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors cursor-pointer"
-                                >
-                                  <X size={18} strokeWidth={3} />
-                                </motion.button>
-                              </div>
-                              {/* 分组和优先级选择器 */}
-                              <div className="flex flex-wrap items-center gap-3">
-                                {/* Group Selector */}
-                                <div className="relative">
-                                  <select
-                                    value={editGroupId}
-                                    onChange={(e) => setEditGroupId(e.target.value)}
-                                    className="appearance-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-widest pl-8 pr-8 py-2 rounded-xl cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none ring-1 ring-slate-200 dark:ring-slate-700"
-                                  >
-                                    {groups.map((g) => (
-                                      <option key={g.id} value={g.id}>{g.name}</option>
-                                    ))}
-                                  </select>
-                                  <List className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                                </div>
-
-                                {/* Priority Selector */}
-                                <div className="flex gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl ring-1 ring-slate-200 dark:ring-slate-700">
-                                  {(['P0', 'P1', 'P2'] as Priority[]).map((p) => (
-                                    <button
-                                      key={p}
-                                      type="button"
-                                      onClick={() => setEditPriority(p)}
-                                      className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
-                                        editPriority === p
-                                          ? p === 'P0' ? 'bg-red-500 text-white shadow-lg' :
-                                            p === 'P1' ? 'bg-amber-500 text-white shadow-lg' :
-                                            'bg-blue-500 text-white shadow-lg'
-                                          : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                                      }`}
-                                    >
-                                      {p}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveEdit(todo.id);
+                                  if (e.key === 'Escape') cancelEdit();
+                                }}
+                                autoFocus
+                                className="flex-1 bg-slate-100 dark:bg-slate-800 border-none rounded-xl px-4 py-2 text-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                              />
+                              <motion.button
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => saveEdit(todo.id)}
+                                className="p-2 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition-colors cursor-pointer"
+                              >
+                                <Check size={18} strokeWidth={3} />
+                              </motion.button>
+                              <motion.button
+                                whileTap={{ scale: 0.9 }}
+                                onClick={cancelEdit}
+                                className="p-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors cursor-pointer"
+                              >
+                                <X size={18} strokeWidth={3} />
+                              </motion.button>
                             </div>
                           ) : (
                             // 显示模式
@@ -698,7 +650,7 @@ export default function Home() {
                               whileTap={{ scale: 0.9 }}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                startEdit(todo);
+                                startEdit(todo.id, todo.text);
                               }}
                               className="p-3 rounded-2xl text-slate-300 hover:text-blue-500 dark:text-slate-600 dark:hover:text-blue-400 transition-all duration-300 cursor-pointer"
                             >
