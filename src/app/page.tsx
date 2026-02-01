@@ -616,7 +616,7 @@ export default function Home() {
                             </div>
                           ) : (
                             // 显示模式
-                            <div onClick={() => toggleTodo(todo.id, todo.completed)}>
+                            <div>
                               <p
                                 className={`text-lg sm:text-xl font-semibold mb-1 transition-all duration-500 break-words ${
                                   todo.completed
