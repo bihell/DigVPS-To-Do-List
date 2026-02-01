@@ -626,7 +626,56 @@ export default function Home() {
                               >
                                 {todo.text}
                               </p>
-                              <div className="flex items-center gap-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">
+                              <div className="flex items-center gap-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">
+                                {/* 操作按钮 */}
+                                <div className="flex items-center gap-0.5">
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      startEdit(todo.id, todo.text);
+                                    }}
+                                    className="p-1.5 rounded-lg text-slate-300 hover:text-blue-500 dark:text-slate-600 dark:hover:text-blue-400 transition-all cursor-pointer"
+                                  >
+                                    <Pencil size={14} strokeWidth={2.5} />
+                                  </motion.button>
+
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (openMenuId === todo.id) {
+                                        setOpenMenuId(null);
+                                        setMenuPosition(null);
+                                      } else {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        setMenuPosition({
+                                          top: rect.bottom + 8,
+                                          right: window.innerWidth - rect.right
+                                        });
+                                        setOpenMenuId(todo.id);
+                                      }
+                                    }}
+                                    className="p-1.5 rounded-lg text-slate-300 hover:text-slate-600 dark:text-slate-600 dark:hover:text-slate-300 transition-all cursor-pointer"
+                                  >
+                                    <MoreVertical size={14} strokeWidth={2.5} />
+                                  </motion.button>
+
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteTodo(todo.id);
+                                    }}
+                                    className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-all cursor-pointer"
+                                  >
+                                    <Trash2 size={14} strokeWidth={2.5} />
+                                  </motion.button>
+                                </div>
+
                                 <span className="flex items-center gap-1.5">
                                   <Calendar size={12} strokeWidth={2.5} />
                                   {formatDate(todo.createdAt)}
@@ -641,61 +690,6 @@ export default function Home() {
                             </div>
                           )}
                         </div>
-
-                        {/* 操作按钮 */}
-                        {editingId !== todo.id && (
-                          <div className="flex items-center gap-1">
-                            <motion.button
-                              whileHover={{ scale: 1.1, backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                startEdit(todo.id, todo.text);
-                              }}
-                              className="p-3 rounded-2xl text-slate-300 hover:text-blue-500 dark:text-slate-600 dark:hover:text-blue-400 transition-all duration-300 cursor-pointer"
-                            >
-                              <Pencil size={18} strokeWidth={2.5} />
-                            </motion.button>
-
-                            {/* Quick Priority/Group Select for existing items */}
-                            <div className="relative">
-                              <motion.button
-                                whileHover={{ scale: 1.1, backgroundColor: 'rgba(100, 116, 139, 0.1)' }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (openMenuId === todo.id) {
-                                    setOpenMenuId(null);
-                                    setMenuPosition(null);
-                                  } else {
-                                    // 计算菜单位置
-                                    const rect = e.currentTarget.getBoundingClientRect();
-                                    setMenuPosition({
-                                      top: rect.bottom + 8,
-                                      right: window.innerWidth - rect.right
-                                    });
-                                    setOpenMenuId(todo.id);
-                                  }
-                                }}
-                                className="p-3 rounded-2xl text-slate-300 hover:text-slate-600 dark:text-slate-600 dark:hover:text-slate-300 transition-all duration-300 cursor-pointer"
-                              >
-                                <MoreVertical size={18} strokeWidth={2.5} />
-                              </motion.button>
-                            </div>
-
-                            <motion.button
-                              whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteTodo(todo.id);
-                              }}
-                              className="p-3 rounded-2xl text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-all duration-300 cursor-pointer"
-                            >
-                              <Trash2 size={20} strokeWidth={2.5} />
-                            </motion.button>
-                          </div>
-                        )}
                       </div>
                     </motion.div>
                   ))
