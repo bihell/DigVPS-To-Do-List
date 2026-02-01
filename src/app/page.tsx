@@ -391,13 +391,17 @@ export default function Home() {
           className="glass-card p-2 rounded-[2rem] mb-10 sm:mb-12 shadow-2xl ring-1 ring-black/5 dark:ring-white/10"
         >
           <form onSubmit={addTodo} className="space-y-2">
-            <div className="flex gap-2 p-1">
-              <input
-                type="text"
+            <div className="flex gap-2 p-1 items-start">
+              <textarea
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={(e) => {
+                  setInputValue(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
+                }}
                 placeholder={t.addTaskPlaceholder}
-                className="flex-1 bg-transparent border-none rounded-2xl px-5 py-4 text-base sm:text-lg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-0 transition-all"
+                rows={1}
+                className="flex-1 bg-transparent border-none rounded-2xl px-5 py-4 text-base sm:text-lg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-0 transition-all resize-none overflow-hidden"
               />
               <button
                 type="submit"
@@ -587,17 +591,26 @@ export default function Home() {
 
                           {editingId === todo.id ? (
                             // 编辑模式
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="text"
+                            <div className="flex items-start gap-2">
+                              <textarea
                                 value={editText}
-                                onChange={(e) => setEditText(e.target.value)}
+                                onChange={(e) => {
+                                  setEditText(e.target.value);
+                                  e.target.style.height = 'auto';
+                                  e.target.style.height = e.target.scrollHeight + 'px';
+                                }}
                                 onKeyDown={(e) => {
-                                  if (e.key === 'Enter') saveEdit(todo.id);
                                   if (e.key === 'Escape') cancelEdit();
                                 }}
                                 autoFocus
-                                className="flex-1 bg-slate-100 dark:bg-slate-800 border-none rounded-xl px-4 py-2 text-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                ref={(el) => {
+                                  if (el) {
+                                    el.style.height = 'auto';
+                                    el.style.height = el.scrollHeight + 'px';
+                                  }
+                                }}
+                                rows={1}
+                                className="flex-1 bg-slate-100 dark:bg-slate-800 border-none rounded-xl px-4 py-2 text-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none overflow-hidden"
                               />
                               <motion.button
                                 whileTap={{ scale: 0.9 }}
@@ -618,7 +631,7 @@ export default function Home() {
                             // 显示模式
                             <div>
                               <p
-                                className={`text-lg sm:text-xl font-semibold mb-1 transition-all duration-500 break-words ${
+                                className={`text-lg sm:text-xl font-semibold mb-1 transition-all duration-500 break-words whitespace-pre-wrap ${
                                   todo.completed
                                     ? 'line-through text-slate-400 dark:text-slate-500 italic'
                                     : 'text-slate-900 dark:text-white'
