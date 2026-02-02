@@ -292,16 +292,11 @@ export default function Home() {
           return a.completed ? 1 : -1;
         }
 
-        // 2. 按优先级排序 (P0 > P1 > P2)
-        const priorityOrder = { 'P0': 0, 'P1': 1, 'P2': 2 };
-        const aPrio = a.priority || 'P2';
-        const bPrio = b.priority || 'P2';
-
-        if (priorityOrder[aPrio] !== priorityOrder[bPrio]) {
-          return priorityOrder[aPrio] - priorityOrder[bPrio];
+        // 2. 按时间逆序排序
+        // 已完成任务按完成时间降序，未完成任务按创建时间降序
+        if (a.completed && b.completed) {
+          return (b.completedAt || 0) - (a.completedAt || 0);
         }
-
-        // 3. 按创建时间降序排序
         return b.createdAt - a.createdAt;
       });
   }, [todos, filter, activeGroupId]);
