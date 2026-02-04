@@ -19,8 +19,3 @@ export interface Group {
 }
 
 export const DEFAULT_GROUP_ID = 'default';
-
-export interface Stats {
-  pv: number;
-  uv: number;
-}

@@ -1,15 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-import { Todo, Group, Stats, DEFAULT_GROUP_ID } from './types';
+import { Todo, Group, DEFAULT_GROUP_ID } from './types';
 
 // 支持 Docker 数据目录 and 本地开发
 const DATA_DIR = process.env.DATA_DIR || process.cwd();
 const DATA_FILE = path.join(DATA_DIR, 'todos.json');
-const STATS_FILE = path.join(DATA_DIR, 'stats.json');
 const GROUPS_FILE = path.join(DATA_DIR, 'groups.json');
 
 export { DEFAULT_GROUP_ID };
-export type { Todo, Group, Stats };
+export type { Todo, Group };
 
 export const getTodos = (): Todo[] => {
   try {
@@ -101,50 +100,3 @@ export const saveGroups = (groups: Group[]) => {
   }
 };
 
-export const getStats = (): Stats => {
-  try {
-    // 确保数据目录存在
-    const dir = path.dirname(STATS_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-      console.log(`[Storage] Created data directory: ${dir}`);
-    }
-    
-    if (!fs.existsSync(STATS_FILE)) {
-      const initialStats = { pv: 0, uv: 0 };
-      fs.writeFileSync(STATS_FILE, JSON.stringify(initialStats, null, 2), 'utf-8');
-      console.log(`[Storage] Created new stats file: ${STATS_FILE}`);
-      return initialStats;
-    }
-    
-    const data = fs.readFileSync(STATS_FILE, 'utf-8');
-    const stats = JSON.parse(data);
-    console.log(`[Storage] Loaded stats from ${STATS_FILE}: PV=${stats.pv}, UV=${stats.uv}`);
-    return stats;
-  } catch (error) {
-    console.error('[Storage] Error reading stats:', error);
-    return { pv: 0, uv: 0 };
-  }
-};
-
-export const updateStats = (isNewVisitor: boolean): Stats => {
-  try {
-    // 确保数据目录存在
-    const dir = path.dirname(STATS_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    
-    const stats = getStats();
-    stats.pv += 1;
-    if (isNewVisitor) {
-      stats.uv += 1;
-    }
-    fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2), 'utf-8');
-    console.log(`[Storage] Updated stats: PV=${stats.pv}, UV=${stats.uv}`);
-    return stats;
-  } catch (error) {
-    console.error('[Storage] Error updating stats:', error);
-    return { pv: 0, uv: 0 };
-  }
-};

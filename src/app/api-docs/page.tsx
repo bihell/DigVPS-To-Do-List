@@ -88,15 +88,6 @@ const endpoints: Endpoint[] = [
   -H "X-API-Key: your-password"`,
   },
   {
-    method: 'GET',
-    path: '/api/stats',
-    description: 'Get site statistics (PV/UV)',
-    descriptionZh: '获取站点统计（PV/UV）',
-    auth: false,
-    responseExample: { pv: 1234, uv: 56 },
-    curlExample: 'curl https://your-domain.com/api/stats',
-  },
-  {
     method: 'POST',
     path: '/api/auth',
     description: 'Verify password',

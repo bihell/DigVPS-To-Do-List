@@ -34,33 +34,11 @@ export const translations = {
     themeDark: '深色模式',
     themeSystem: '跟随系统',
 
-    // Analytics
-    insights: '数据分析',
-    analyticsLoading: '正在加载分析数据...',
-    aggregatingRecords: '正在汇总数据...',
-    past7Days: '过去 7 天',
-    pastMonth: '过去一个月',
-    allTime: '所有时间',
-    totalCreated: '总创建数',
-    successRate: '完成率',
-    dailyActivity: '每日动态',
-    creationVsCompletion: '创建与完成对比',
-    recentTaskTimeline: '近期任务时间轴',
-    completionDuration: '任务完成耗时分析',
-    took: '耗时约',
-    hours: '小时',
-    liveDataEngine: '实时数据引擎',
-    trend: '趋势',
-    createdLabel: '已创建',
-    completedLabel: '已完成',
-
     // Notifications & Status
     settingsSaved: '设置已保存',
     syncingTasks: '正在同步任务...',
     noActiveTasks: '暂无进行中的任务',
     noCompletedTasks: '暂无已完成的任务',
-    pv: '访问量 (PV)',
-    uv: '访客数 (UV)',
 
     // Auth
     authRequired: '需要验证权限',
@@ -125,33 +103,11 @@ export const translations = {
     themeDark: 'Dark Mode',
     themeSystem: 'Follow System',
 
-    // Analytics
-    insights: 'Insights',
-    analyticsLoading: 'Loading analytics data...',
-    aggregatingRecords: 'Aggregating records...',
-    past7Days: 'Past 7 Days',
-    pastMonth: 'Past Month',
-    allTime: 'All Time',
-    totalCreated: 'Total Created',
-    successRate: 'Success Rate',
-    dailyActivity: 'Daily Activity',
-    creationVsCompletion: 'Creation vs Completion',
-    recentTaskTimeline: 'Recent Task Timeline',
-    completionDuration: 'Completion Time Analysis',
-    took: 'Took ~',
-    hours: 'h',
-    liveDataEngine: 'Live Data Engine',
-    trend: 'Trend',
-    createdLabel: 'Created',
-    completedLabel: 'Completed',
-
     // Notifications & Status
     settingsSaved: 'Settings Saved',
     syncingTasks: 'Syncing tasks...',
     noActiveTasks: 'No active tasks',
     noCompletedTasks: 'No completed tasks',
-    pv: 'Page Views (PV)',
-    uv: 'Unique Visitors (UV)',
 
     // Auth
     authRequired: 'Authentication Required',

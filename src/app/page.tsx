@@ -4,7 +4,7 @@ import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Todo, Group, Priority, DEFAULT_GROUP_ID } from '@/lib/types';
-import { Trash2, Plus, CheckCircle2, Circle, Calendar, Clock, List, Loader, CheckCheck, Settings as SettingsIcon, BarChart3, ShieldCheck, ShieldOff, LogOut, Pencil, Check, X, Github, Heart, Code2, FolderPlus, Flag, ChevronDown, MoreVertical } from 'lucide-react';
+import { Trash2, Plus, CheckCircle2, Circle, Calendar, Clock, List, Loader, CheckCheck, Settings as SettingsIcon, ShieldCheck, ShieldOff, LogOut, Pencil, Check, X, Github, Heart, Code2, FolderPlus, Flag, ChevronDown, MoreVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,9 +40,6 @@ export default function Home() {
   useEffect(() => {
     fetchTodos();
     fetchGroups();
-
-    // Record PV/UV
-    fetch('/api/stats', { method: 'POST' }).catch(err => console.error('Failed to record stats:', err));
 
     // Detect mobile device
     const checkMobile = () => {
@@ -309,41 +306,6 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-light-primary transition-colors duration-500">
-      {/* Settings & Analytics Buttons (Fixed Top Right) */}
-      <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-40 flex flex-col gap-3">
-        {/* Auth Status Indicator */}
-        <motion.button
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={isAuthenticated ? logout : requestAuth}
-          className={`p-3 backdrop-blur-xl rounded-2xl border shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer ${
-            isAuthenticated 
-              ? 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-300 dark:border-emerald-700' 
-              : 'bg-amber-500/10 dark:bg-amber-500/20 border-amber-300 dark:border-amber-700'
-          }`}
-          title={isAuthenticated ? t.logout : t.authRequired}
-        >
-          {isAuthenticated ? (
-            <ShieldCheck size={22} className="text-emerald-600 dark:text-emerald-400" />
-          ) : (
-            <ShieldOff size={22} className="text-amber-600 dark:text-amber-400" />
-          )}
-        </motion.button>
-        <motion.button
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => router.push('/analytics')}
-          className="p-3 bg-blue-600 dark:bg-blue-500 text-white backdrop-blur-xl rounded-2xl shadow-xl hover:shadow-2xl hover:bg-blue-700 dark:hover:bg-blue-400 transition-all duration-300 cursor-pointer"
-        >
-          <BarChart3 size={22} strokeWidth={2.5} />
-        </motion.button>
-      </div>
 
       {/* Hero Section with Logo */}
       <section className="w-full pt-12 sm:pt-16 pb-8 sm:pb-12">
