@@ -67,6 +67,9 @@ export const translations = {
     manageGroups: '管理分组',
     newGroupName: '新分组名称',
     noPriority: '无优先级',
+    confirmDeleteTitle: '确认删除',
+    confirmDeleteMessage: '确定要删除这条任务吗？',
+    confirm: '删除',
   },
   en: {
     // Common
@@ -136,6 +139,9 @@ export const translations = {
     manageGroups: 'Manage Groups',
     newGroupName: 'New Group Name',
     noPriority: 'No Priority',
+    confirmDeleteTitle: 'Confirm Delete',
+    confirmDeleteMessage: 'Are you sure you want to delete this task?',
+    confirm: 'Delete',
   },
 };
 

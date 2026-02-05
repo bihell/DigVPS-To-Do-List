@@ -36,6 +36,7 @@ export default function Home() {
   const [activeGroupId, setActiveGroupId] = useState<string | 'all'>('all');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTodos();
@@ -648,7 +649,7 @@ export default function Home() {
                                       whileTap={{ scale: 0.9 }}
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        deleteTodo(todo.id);
+                                        setConfirmDeleteId(todo.id);
                                       }}
                                       className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-all cursor-pointer"
                                   >
@@ -865,6 +866,56 @@ export default function Home() {
               })()}
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {confirmDeleteId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-xl bg-slate-900/40"
+            onClick={() => setConfirmDeleteId(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="glass-card w-full max-w-sm p-8 rounded-[2.5rem] shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center mb-6">
+                <div className="w-14 h-14 bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trash2 className="text-red-500" size={24} strokeWidth={2.5} />
+                </div>
+                <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-2">
+                  {t.confirmDeleteTitle}
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {t.confirmDeleteMessage}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="flex-1 px-6 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  onClick={() => {
+                    deleteTodo(confirmDeleteId);
+                    setConfirmDeleteId(null);
+                  }}
+                  className="flex-1 px-6 py-3 rounded-2xl bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20 cursor-pointer"
+                >
+                  {t.confirm}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </main>
