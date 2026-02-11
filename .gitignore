@@ -36,3 +36,5 @@ app.log
 app.pid
 stats.json
 .idea
+groups.json
+todos.json
