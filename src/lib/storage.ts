@@ -2,8 +2,47 @@ import fs from 'fs';
 import path from 'path';
 import { Todo, Group, DEFAULT_GROUP_ID } from './types';
 
+/**
+ * Validate and sanitize DATA_DIR to prevent path traversal attacks
+ */
+function validateDataDir(dir: string): string {
+  // Resolve to absolute path
+  const resolvedPath = path.resolve(dir);
+
+  // Ensure the path doesn't contain dangerous patterns
+  const normalizedPath = path.normalize(resolvedPath);
+
+  // Check for path traversal attempts
+  if (normalizedPath.includes('..')) {
+    console.error('[Storage] Path traversal attempt detected:', dir);
+    throw new Error('Invalid data directory path');
+  }
+
+  // On Unix systems, ensure path is within allowed directories
+  if (process.platform !== 'win32') {
+    // Allow /app (Docker), /var, /tmp, or current working directory tree
+    const allowedPrefixes = [
+      '/app',
+      '/var',
+      '/tmp',
+      process.cwd(),
+    ];
+
+    const isAllowed = allowedPrefixes.some(prefix =>
+      normalizedPath.startsWith(path.resolve(prefix))
+    );
+
+    if (!isAllowed) {
+      console.error('[Storage] Data directory outside allowed paths:', normalizedPath);
+      throw new Error('Data directory must be within allowed paths');
+    }
+  }
+
+  return normalizedPath;
+}
+
 // 支持 Docker 数据目录 and 本地开发
-const DATA_DIR = process.env.DATA_DIR || process.cwd();
+const DATA_DIR = validateDataDir(process.env.DATA_DIR || process.cwd());
 const DATA_FILE = path.join(DATA_DIR, 'todos.json');
 const GROUPS_FILE = path.join(DATA_DIR, 'groups.json');
 

@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getTodos, saveTodos, Todo } from '@/lib/storage';
+import {
+  validateTodoText,
+  validateGroupId,
+  validatePriority,
+  validateTimestamp,
+  validateBoolean,
+  validateUUID
+} from '@/lib/validation';
+import { checkRateLimit } from '@/lib/ratelimit';
 
 // API 密码验证
 const AUTH_PASSWORD = process.env.AUTH_PASSWORD || 'stark123';
@@ -11,17 +20,42 @@ function verifyApiKey(request: Request): boolean {
 
 function unauthorizedResponse() {
   return NextResponse.json(
-    { 
-      error: 'Unauthorized', 
-      message: 'Valid API key required. Use header: X-API-Key: <password> or Authorization: Bearer <password>' 
-    }, 
+    {
+      error: 'Unauthorized',
+      message: 'Valid API key required. Use header: X-API-Key: <password> or Authorization: Bearer <password>'
+    },
     { status: 401 }
   );
 }
 
-// GET - 获取所有任务（无需认证）
-export async function GET() {
+function rateLimitResponse(resetTime: number, remaining: number) {
+  const resetTimeSeconds = Math.ceil((resetTime - Date.now()) / 1000);
+  return NextResponse.json(
+    {
+      error: 'Rate limit exceeded',
+      message: `Too many requests. Please try again in ${resetTimeSeconds} seconds.`
+    },
+    {
+      status: 429,
+      headers: {
+        'Retry-After': String(resetTimeSeconds),
+        'X-RateLimit-Limit': '100',
+        'X-RateLimit-Remaining': String(remaining),
+        'X-RateLimit-Reset': String(resetTime),
+      }
+    }
+  );
+}
+
+// GET - 获取所有任务（公开访问，但有速率限制）
+export async function GET(request: Request) {
   try {
+    // Rate limiting - 防止滥用
+    const rateLimit = checkRateLimit(request);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.resetTime, rateLimit.remaining);
+    }
+
     const todos = getTodos();
     // 只返回未删除的任务
     const activeTodos = todos.filter(t => !t.deleted);
@@ -36,104 +70,126 @@ export async function GET() {
 // POST - 创建新任务（需要认证）
 export async function POST(request: Request) {
   try {
+    // Rate limiting
+    const rateLimit = checkRateLimit(request);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.resetTime, rateLimit.remaining);
+    }
+
     // 验证 API Key
     if (!verifyApiKey(request)) {
       return unauthorizedResponse();
     }
 
-    const { text, createdAt, groupId, priority } = await request.json();
-    if (!text) {
-      return NextResponse.json({ error: 'Text is required' }, { status: 400 });
-    }
+    const body = await request.json();
+
+    // Validate and sanitize all inputs
+    const validatedText = validateTodoText(body.text);
+    const validatedGroupId = body.groupId ? validateGroupId(body.groupId) : 'default';
+    const validatedPriority = validatePriority(body.priority);
+    const validatedCreatedAt = validateTimestamp(body.createdAt);
 
     const todos = getTodos();
     const newTodo: Todo = {
       id: crypto.randomUUID(),
-      text,
+      text: validatedText,
       completed: false,
-      createdAt: createdAt || Date.now(), // 支持自定义创建时间
-      groupId: groupId || 'default',
-      priority: priority || 'P2',
+      createdAt: validatedCreatedAt,
+      groupId: validatedGroupId,
+      priority: validatedPriority,
     };
 
     todos.push(newTodo);
     saveTodos(todos);
-    
-    console.log(`[API POST] Created todo: ${newTodo.id} - "${text}"`);
+
+    console.log(`[API POST] Created todo: ${newTodo.id}`);
     return NextResponse.json(newTodo, { status: 201 });
   } catch (error) {
     console.error('[API POST] Error:', error);
-    return NextResponse.json({ error: 'Failed to create todo' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create todo';
+    return NextResponse.json({ error: errorMessage }, { status: 400 });
   }
 }
 
 // PUT - 更新任务（需要认证）
 export async function PUT(request: Request) {
   try {
+    // Rate limiting
+    const rateLimit = checkRateLimit(request);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.resetTime, rateLimit.remaining);
+    }
+
     // 验证 API Key
     if (!verifyApiKey(request)) {
       return unauthorizedResponse();
     }
 
-    const { id, completed, text, createdAt, completedAt, groupId, priority } = await request.json();
-    
-    if (!id) {
-      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
-    }
+    const body = await request.json();
+
+    // Validate ID
+    const validatedId = validateUUID(body.id);
 
     const todos = getTodos();
-    const index = todos.findIndex((t) => t.id === id);
+    const index = todos.findIndex((t) => t.id === validatedId);
 
     if (index === -1) {
-      console.warn(`[API PUT] Todo not found: ${id}`);
+      console.warn(`[API PUT] Todo not found: ${validatedId}`);
       return NextResponse.json({ error: 'Todo not found' }, { status: 404 });
     }
 
-    // 更新文本
-    if (text !== undefined) {
-      todos[index].text = text;
+    // Validate and update text
+    if (body.text !== undefined) {
+      todos[index].text = validateTodoText(body.text);
     }
 
-    // 更新创建时间（可选）
-    if (createdAt !== undefined) {
-      todos[index].createdAt = createdAt;
+    // Validate and update created time
+    if (body.createdAt !== undefined) {
+      todos[index].createdAt = validateTimestamp(body.createdAt);
     }
 
-    // 更新完成状态
-    if (completed !== undefined) {
-      todos[index].completed = completed;
-      if (completed) {
-        // 支持自定义完成时间，否则使用当前时间
-        todos[index].completedAt = completedAt || Date.now();
+    // Validate and update completed status
+    if (body.completed !== undefined) {
+      const validatedCompleted = validateBoolean(body.completed);
+      todos[index].completed = validatedCompleted;
+
+      if (validatedCompleted) {
+        todos[index].completedAt = validateTimestamp(body.completedAt);
       } else {
         delete todos[index].completedAt;
       }
-    } else if (completedAt !== undefined && todos[index].completed) {
-      // 仅更新完成时间
-      todos[index].completedAt = completedAt;
+    } else if (body.completedAt !== undefined && todos[index].completed) {
+      todos[index].completedAt = validateTimestamp(body.completedAt);
     }
 
-    // 更新分组和优先级
-    if (groupId !== undefined) {
-      todos[index].groupId = groupId;
+    // Validate and update group and priority
+    if (body.groupId !== undefined) {
+      todos[index].groupId = validateGroupId(body.groupId);
     }
-    if (priority !== undefined) {
-      todos[index].priority = priority;
+    if (body.priority !== undefined) {
+      todos[index].priority = validatePriority(body.priority);
     }
 
     saveTodos(todos);
-    
-    console.log(`[API PUT] Updated todo: ${id}`);
+
+    console.log(`[API PUT] Updated todo: ${validatedId}`);
     return NextResponse.json(todos[index]);
   } catch (error) {
     console.error('[API PUT] Error:', error);
-    return NextResponse.json({ error: 'Failed to update todo' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Failed to update todo';
+    return NextResponse.json({ error: errorMessage }, { status: 400 });
   }
 }
 
 // DELETE - 删除任务（需要认证）
 export async function DELETE(request: Request) {
   try {
+    // Rate limiting
+    const rateLimit = checkRateLimit(request);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.resetTime, rateLimit.remaining);
+    }
+
     // 验证 API Key
     if (!verifyApiKey(request)) {
       return unauthorizedResponse();
@@ -142,15 +198,14 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
-    if (!id) {
-      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
-    }
+    // Validate ID
+    const validatedId = validateUUID(id);
 
     const todos = getTodos();
-    const index = todos.findIndex((t) => t.id === id);
+    const index = todos.findIndex((t) => t.id === validatedId);
 
     if (index === -1) {
-      console.warn(`[API DELETE] Todo not found: ${id}`);
+      console.warn(`[API DELETE] Todo not found: ${validatedId}`);
       return NextResponse.json({ error: 'Todo not found' }, { status: 404 });
     }
 
@@ -159,11 +214,12 @@ export async function DELETE(request: Request) {
     todos[index].deletedAt = Date.now();
 
     saveTodos(todos);
-    
-    console.log(`[API DELETE] Deleted todo: ${id}`);
-    return NextResponse.json({ success: true, id });
+
+    console.log(`[API DELETE] Deleted todo: ${validatedId}`);
+    return NextResponse.json({ success: true, id: validatedId });
   } catch (error) {
     console.error('[API DELETE] Error:', error);
-    return NextResponse.json({ error: 'Failed to delete todo' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Failed to delete todo';
+    return NextResponse.json({ error: errorMessage }, { status: 400 });
   }
 }
