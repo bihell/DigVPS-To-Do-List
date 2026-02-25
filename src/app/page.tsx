@@ -323,16 +323,11 @@ export default function Home() {
         return matchesFilter && matchesGroup;
       })
       .sort((a, b) => {
-        // 1. 未完成任务排在前面
-        if (a.completed !== b.completed) {
-          return a.completed ? 1 : -1;
-        }
+        // 1. 按点赞数量倒序
+        const likeDiff = (b.likes || 0) - (a.likes || 0);
+        if (likeDiff !== 0) return likeDiff;
 
-        // 2. 按时间逆序排序
-        // 已完成任务按完成时间降序，未完成任务按创建时间降序
-        if (a.completed && b.completed) {
-          return (b.completedAt || 0) - (a.completedAt || 0);
-        }
+        // 2. 按创建时间倒序
         return b.createdAt - a.createdAt;
       });
   }, [todos, filter, activeGroupId]);
