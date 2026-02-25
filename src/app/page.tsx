@@ -37,10 +37,12 @@ export default function Home() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [likedTodoIds, setLikedTodoIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchTodos();
     fetchGroups();
+    fetchLikedTodos();
 
     // Detect mobile device
     const checkMobile = () => {
@@ -73,6 +75,42 @@ export default function Home() {
       setGroups(data);
     } catch (error) {
       console.error('Failed to fetch groups:', error);
+    }
+  }, []);
+
+  const fetchLikedTodos = useCallback(async () => {
+    try {
+      const response = await fetch('/api/likes');
+      const data = await response.json();
+      setLikedTodoIds(new Set(data.likedTodoIds || []));
+    } catch (error) {
+      console.error('Failed to fetch liked todos:', error);
+    }
+  }, []);
+
+  const likeTodo = useCallback(async (id: string) => {
+    try {
+      const response = await fetch('/api/likes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ todoId: id }),
+      });
+      const data = await response.json();
+      if (!response.ok) return;
+
+      setLikedTodoIds(prev => {
+        const next = new Set(prev);
+        if (data.liked) {
+          next.add(id);
+        } else {
+          next.delete(id);
+        }
+        return next;
+      });
+
+      setTodos(prev => prev.map(t => t.id === id ? { ...t, likes: data.likes } : t));
+    } catch (error) {
+      console.error('Failed to like todo:', error);
     }
   }, []);
 
@@ -610,6 +648,28 @@ export default function Home() {
                                 )}
                                 {/* 操作按钮 */}
                                 <div className="flex items-center gap-0.5">
+                                  {/* 点赞按钮 */}
+                                  <motion.button
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        likeTodo(todo.id);
+                                      }}
+                                      className={`flex items-center gap-1 p-1.5 rounded-lg transition-all cursor-pointer ${
+                                        likedTodoIds.has(todo.id)
+                                          ? 'text-rose-500 dark:text-rose-400'
+                                          : 'text-slate-300 hover:text-rose-500 dark:text-slate-600 dark:hover:text-rose-400'
+                                      }`}
+                                      title={likedTodoIds.has(todo.id) ? t.liked : t.like}
+                                  >
+                                    <Heart size={14} strokeWidth={2.5} fill={likedTodoIds.has(todo.id) ? 'currentColor' : 'none'} />
+                                    {(todo.likes ?? 0) > 0 && (
+                                      <span className="text-[10px] font-bold tabular-nums">{todo.likes}</span>
+                                    )}
+                                  </motion.button>
+
+                                  {isAuthenticated && (
                                   <motion.button
                                       whileHover={{ scale: 1.1 }}
                                       whileTap={{ scale: 0.9 }}
@@ -621,7 +681,9 @@ export default function Home() {
                                   >
                                     <Pencil size={14} strokeWidth={2.5} />
                                   </motion.button>
+                                  )}
 
+                                  {isAuthenticated && (<>
                                   <motion.button
                                       whileHover={{ scale: 1.1 }}
                                       whileTap={{ scale: 0.9 }}
@@ -655,6 +717,7 @@ export default function Home() {
                                   >
                                     <Trash2 size={14} strokeWidth={2.5} />
                                   </motion.button>
+                                  </>)}
                                 </div>
                               </div>
                             </div>

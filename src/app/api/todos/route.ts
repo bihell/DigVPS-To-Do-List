@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getTodos, saveTodos, Todo } from '@/lib/storage';
+import { getTodos, saveTodos, deleteTodoLikes, Todo } from '@/lib/storage';
 import {
   validateTodoText,
   validateGroupId,
@@ -214,6 +214,9 @@ export async function DELETE(request: Request) {
     todos[index].deletedAt = Date.now();
 
     saveTodos(todos);
+
+    // 清理该任务的点赞 IP 记录
+    deleteTodoLikes(validatedId);
 
     console.log(`[API DELETE] Deleted todo: ${validatedId}`);
     return NextResponse.json({ success: true, id: validatedId });

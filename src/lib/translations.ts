@@ -70,6 +70,8 @@ export const translations = {
     confirmDeleteTitle: '确认删除',
     confirmDeleteMessage: '确定要删除这条任务吗？',
     confirm: '删除',
+    like: '点赞',
+    liked: '已点赞',
   },
   en: {
     // Common
@@ -142,6 +144,8 @@ export const translations = {
     confirmDeleteTitle: 'Confirm Delete',
     confirmDeleteMessage: 'Are you sure you want to delete this task?',
     confirm: 'Delete',
+    like: 'Like',
+    liked: 'Liked',
   },
 };
 

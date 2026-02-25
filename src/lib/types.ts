@@ -10,6 +10,7 @@ export interface Todo {
   deletedAt?: number;
   groupId?: string;
   priority?: Priority;
+  likes?: number;
 }
 
 export interface Group {

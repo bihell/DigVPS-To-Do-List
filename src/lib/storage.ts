@@ -45,6 +45,7 @@ function validateDataDir(dir: string): string {
 const DATA_DIR = validateDataDir(process.env.DATA_DIR || process.cwd());
 const DATA_FILE = path.join(DATA_DIR, 'todos.json');
 const GROUPS_FILE = path.join(DATA_DIR, 'groups.json');
+const LIKES_FILE = path.join(DATA_DIR, 'likes.json');
 
 export { DEFAULT_GROUP_ID };
 export type { Todo, Group };
@@ -136,6 +137,48 @@ export const saveGroups = (groups: Group[]) => {
   } catch (error) {
     console.error('[Storage] Error saving groups:', error);
     throw error;
+  }
+};
+
+// likes.json 结构: { [todoId]: string[] } 存储每个任务的点赞 IP 列表
+export const getLikes = (): Record<string, string[]> => {
+  try {
+    const dir = path.dirname(LIKES_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    if (!fs.existsSync(LIKES_FILE)) {
+      fs.writeFileSync(LIKES_FILE, '{}', 'utf-8');
+      return {};
+    }
+    const data = fs.readFileSync(LIKES_FILE, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('[Storage] Error reading likes:', error);
+    return {};
+  }
+};
+
+export const saveLikes = (likes: Record<string, string[]>) => {
+  try {
+    const dir = path.dirname(LIKES_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(LIKES_FILE, JSON.stringify(likes, null, 2), 'utf-8');
+  } catch (error) {
+    console.error('[Storage] Error saving likes:', error);
+    throw error;
+  }
+};
+
+export const deleteTodoLikes = (todoId: string) => {
+  try {
+    const likes = getLikes();
+    delete likes[todoId];
+    saveLikes(likes);
+  } catch (error) {
+    console.error('[Storage] Error deleting todo likes:', error);
   }
 };
 
